@@ -35,3 +35,4 @@ src/test
 .mvn
 mvnw.cmd
 mvnw
+src/main/resources/application.properties
