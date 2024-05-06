@@ -3,6 +3,7 @@ package com.dmiit3iy.telegrambot.controllers;
 import com.dmiit3iy.telegrambot.model.Compliment;
 import com.dmiit3iy.telegrambot.model.Person;
 import com.dmiit3iy.telegrambot.services.ComplimentService;
+import com.dmiit3iy.telegrambot.services.HistoryService;
 import com.dmiit3iy.telegrambot.services.PersonService;
 import com.github.kshashov.telegram.api.MessageType;
 import com.github.kshashov.telegram.api.TelegramMvcController;
@@ -46,6 +47,13 @@ public class TelegramBotController implements TelegramMvcController {
         this.complimentService = complimentService;
     }
 
+    private HistoryService historyService;
+
+    @Autowired
+    public void setHistoryService(HistoryService historyService) {
+        this.historyService = historyService;
+    }
+
     private Keyboard replyKeyboardMarkup;
 
     @PostConstruct
@@ -72,7 +80,7 @@ public class TelegramBotController implements TelegramMvcController {
 
     private SendMessage sendMessageListWithButtons(long chatId, List<Compliment> compliments) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (Compliment c:compliments){
+        for (Compliment c : compliments) {
             stringBuilder.append(c.getCompliment());
             stringBuilder.append("\n");
         }
@@ -81,7 +89,6 @@ public class TelegramBotController implements TelegramMvcController {
         sendMessage.replyMarkup(replyKeyboardMarkup);
         return sendMessage.parseMode(ParseMode.HTML);
     }
-
 
 
     /**
@@ -115,6 +122,7 @@ public class TelegramBotController implements TelegramMvcController {
     @BotRequest(value = "/all", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest getAll(User user, Chat chat) {
         List<Compliment> list = complimentService.getAll();
+        historyService.add("Нажал кнопку all",chat.id());
         return sendMessageListWithButtons(chat.id(), list);
     }
 
