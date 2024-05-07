@@ -11,4 +11,5 @@
 •	MySQL DB
 •	Telegram API
 •	Jackson
+•	YAML
 • Библиотека spring boot starter for Telegram Bot API. https://github.com/kshashov/spring-boot-starter-telegram
