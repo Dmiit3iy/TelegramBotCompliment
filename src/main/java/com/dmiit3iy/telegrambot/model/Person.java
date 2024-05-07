@@ -25,10 +25,11 @@ public class Person {
     private String lastName;
     private String userName;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "persons_compliments", joinColumns = @JoinColumn(name = "person_id"),
     inverseJoinColumns = @JoinColumn(name="compliment_id"))
     private List<Compliment> compliments = new ArrayList<>();
+
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
     @JsonIgnore
     @ToString.Exclude

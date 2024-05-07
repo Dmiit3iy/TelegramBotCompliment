@@ -6,8 +6,8 @@ import com.dmiit3iy.telegrambot.model.Person;
 import com.dmiit3iy.telegrambot.repository.ComplimentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Random;
@@ -48,8 +48,9 @@ public class ComplimentServiceImpl implements ComplimentService {
     @Override
     public void addAll() {
         for (Compliment compliment : complimentList.getList()) {
-            if (complimentRepository.findByCompliment(compliment.getCompliment()) == null) {
+            try {
                 complimentRepository.save(compliment);
+            } catch (DataIntegrityViolationException ignored) {
             }
         }
     }
@@ -77,6 +78,7 @@ public class ComplimentServiceImpl implements ComplimentService {
         return allCompliments.size() == list.size();
     }
 
+
     @Override
     public Compliment getNext(Person person) {
         List<Compliment> list = person.getCompliments();
@@ -88,6 +90,20 @@ public class ComplimentServiceImpl implements ComplimentService {
             personService.clearCompliments(person.getChatId());
         }
         return compliment;
+    }
+
+    @Override
+    public String getNext(long chatId) {
+        Person person = personService.getById(chatId);
+        List<Compliment> list = person.getCompliments();
+        Compliment compliment;
+        do {
+            compliment = getRandom();
+        } while (list.contains(compliment) && (!isFull(person)));
+        if (isFull(person)) {
+            personService.clearCompliments(person.getChatId());
+        }
+        return compliment.getCompliment();
     }
 
 

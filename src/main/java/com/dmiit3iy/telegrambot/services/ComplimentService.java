@@ -13,7 +13,7 @@ public interface ComplimentService {
 
     Compliment getRandom();
     Compliment getNext(Person person);
-
+    String getNext(long chatId);
     List<Compliment> getAll();
 
 }

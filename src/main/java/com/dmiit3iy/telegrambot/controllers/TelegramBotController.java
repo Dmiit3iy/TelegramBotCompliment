@@ -16,17 +16,11 @@ import com.pengrad.telegrambot.model.request.Keyboard;
 import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.BaseRequest;
-import com.pengrad.telegrambot.request.SendAudio;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.request.SendPhoto;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.util.List;
 
 @BotController
@@ -36,19 +30,19 @@ public class TelegramBotController implements TelegramMvcController {
 
     private PersonService personService;
 
+    private ComplimentService complimentService;
+
+    private HistoryService historyService;
+
     @Autowired
     public void setPersonService(PersonService personService) {
         this.personService = personService;
     }
 
-    private ComplimentService complimentService;
-
     @Autowired
     public void setComplimentService(ComplimentService complimentService) {
         this.complimentService = complimentService;
     }
-
-    private HistoryService historyService;
 
     @Autowired
     public void setHistoryService(HistoryService historyService) {
@@ -82,7 +76,7 @@ public class TelegramBotController implements TelegramMvcController {
     private SendMessage sendMessageListWithButtons(long chatId, List<Compliment> compliments) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("Все это про тебя:");
+        stringBuilder.append("Все это про тебя &#129395:");
         stringBuilder.append("\n");
         for (Compliment c : compliments) {
             stringBuilder.append(c.getCompliment());
@@ -119,9 +113,9 @@ public class TelegramBotController implements TelegramMvcController {
         }
         historyService.add("Нажал кнопку start", chat.id());
         if (firstName != null) {
-            return sendMessageWithButtons(chat.id(), "Привет, " + firstName + "! \uD83D\uDD25 Хочешь немного <b>комплиментов</b>?");
+            return sendMessageWithButtons(chat.id(), "Привет, " + firstName + "! \uD83D\uDD25 Хочешь немного <b>комплиментов</b> &#128571?");
         }
-        return sendMessageWithButtons(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 Хочешь немного <b>комплиментов</b>?");
+        return sendMessageWithButtons(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 Хочешь немного <b>комплиментов</b> &#128571?");
     }
 
     @BotRequest(value = "/all", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
@@ -130,17 +124,22 @@ public class TelegramBotController implements TelegramMvcController {
         historyService.add("Нажал кнопку all", chat.id());
         return sendMessageListWithButtons(chat.id(), list);
     }
-    @Transactional
+
     @BotRequest(value = "/next", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest getNext(User user, Chat chat) {
+        //TODO вынести в сервис
         Person person = personService.getById(user.id());
         Compliment compliment = complimentService.getNext(person);
         person.addCompliment(compliment);
         personService.update(person);
         historyService.add("Нажал кнопку next", chat.id());
 
-        return sendMessageWithButtons(chat.id(),  "Сегодня ты самый "+ "<b>"+compliment.getCompliment()+"</b> человек");
+        return sendMessageWithButtons(chat.id(),  "Сегодня ты самый "+ "<b>"+compliment.getCompliment()+"</b> человек &#129321");
     }
+
+
+
+
 
 
     /**
@@ -153,6 +152,6 @@ public class TelegramBotController implements TelegramMvcController {
      */
     @BotRequest(value = "{message:[\\S ]+}", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest all(@BotPathVariable("message") String text, User user, Chat chat) {
-        return sendMessageWithButtons(chat.id(), "Используйте пожалуйста кнопки /next или /all");
+        return sendMessageWithButtons(chat.id(), "Используйте пожалуйста кнопки /next или /all &#128586");
     }
 }
