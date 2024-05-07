@@ -8,4 +8,7 @@ public interface PersonService {
     Person get (String name);
 
     Person getById (long chatID);
+    Person clearCompliments(long chatID);
+
+    Person update(Person person);
 }

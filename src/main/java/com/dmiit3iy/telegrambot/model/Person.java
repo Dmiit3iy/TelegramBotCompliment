@@ -33,4 +33,8 @@ public class Person {
     @JsonIgnore
     @ToString.Exclude
     private List<History> histories = new ArrayList<>();
+
+    public boolean addCompliment(Compliment compliment){
+        return compliments.add(compliment);
+    }
 }

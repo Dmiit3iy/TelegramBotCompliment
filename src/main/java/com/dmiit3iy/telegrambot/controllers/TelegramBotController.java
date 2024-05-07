@@ -23,6 +23,7 @@ import com.pengrad.telegrambot.request.SendPhoto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -80,6 +81,9 @@ public class TelegramBotController implements TelegramMvcController {
 
     private SendMessage sendMessageListWithButtons(long chatId, List<Compliment> compliments) {
         StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("Все это про тебя:");
+        stringBuilder.append("\n");
         for (Compliment c : compliments) {
             stringBuilder.append(c.getCompliment());
             stringBuilder.append("\n");
@@ -113,17 +117,29 @@ public class TelegramBotController implements TelegramMvcController {
             person.setUserName(userName);
             personService.add(person);
         }
+        historyService.add("Нажал кнопку start", chat.id());
         if (firstName != null) {
-            return sendMessageWithButtons(chat.id(), "Hello, " + firstName + "! \uD83D\uDD25 Welcome to <b>my</b> bot!");
+            return sendMessageWithButtons(chat.id(), "Привет, " + firstName + "! \uD83D\uDD25 Хочешь немного <b>комплиментов</b>?");
         }
-        return sendMessageWithButtons(chat.id(), "Hello, " + userName + "!! \uD83D\uDD25 Welcome to <b>my</b> bot!");
+        return sendMessageWithButtons(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 Хочешь немного <b>комплиментов</b>?");
     }
 
     @BotRequest(value = "/all", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest getAll(User user, Chat chat) {
         List<Compliment> list = complimentService.getAll();
-        historyService.add("Нажал кнопку all",chat.id());
+        historyService.add("Нажал кнопку all", chat.id());
         return sendMessageListWithButtons(chat.id(), list);
+    }
+    @Transactional
+    @BotRequest(value = "/next", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
+    public BaseRequest getNext(User user, Chat chat) {
+        Person person = personService.getById(user.id());
+        Compliment compliment = complimentService.getNext(person);
+        person.addCompliment(compliment);
+        personService.update(person);
+        historyService.add("Нажал кнопку next", chat.id());
+        String message = "Сегодня ты самый(ая) "+ compliment.getCompliment();
+        return sendMessageWithButtons(chat.id(), message);
     }
 
 
@@ -137,6 +153,6 @@ public class TelegramBotController implements TelegramMvcController {
      */
     @BotRequest(value = "{message:[\\S ]+}", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest all(@BotPathVariable("message") String text, User user, Chat chat) {
-        return sendMessageWithButtons(chat.id(), "Thank you for message, you message: " + text);
+        return sendMessageWithButtons(chat.id(), "Используйте пожалуйста кнопки /next или /all");
     }
 }
