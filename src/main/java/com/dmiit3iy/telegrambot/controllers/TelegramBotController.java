@@ -138,8 +138,8 @@ public class TelegramBotController implements TelegramMvcController {
         person.addCompliment(compliment);
         personService.update(person);
         historyService.add("Нажал кнопку next", chat.id());
-        String message = "Сегодня ты самый(ая) "+ compliment.getCompliment();
-        return sendMessageWithButtons(chat.id(), message);
+
+        return sendMessageWithButtons(chat.id(),  "Сегодня ты самый "+ "<b>"+compliment.getCompliment()+"</b> человек");
     }
 
 
