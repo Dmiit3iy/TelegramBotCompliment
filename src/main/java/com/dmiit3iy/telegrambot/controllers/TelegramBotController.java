@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 @BotController
@@ -198,8 +199,13 @@ public class TelegramBotController implements TelegramMvcController {
 
     @BotRequest(value = "/image", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest image(User user, Chat chat) {
-        String message = photoService.getAll();
-        return sendMessage(chat.id(), message);
+        if (personService.isRegistered(chat.id())) {
+            String message = photoService.getAllTextMsg();
+            historyService.add("Нажал кнопку image", chat.id());
+            return sendMessage(chat.id(), message);
+        } else {
+            return sendMessageWithButtonsStart(chat.id(), "Необходимо пройди простую регистрацию (нажми кнопку register");
+        }
     }
 
 
@@ -213,10 +219,14 @@ public class TelegramBotController implements TelegramMvcController {
      */
     @BotRequest(value = "{message:[\\S ]+}", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest all(@BotPathVariable("message") String text, User user, Chat chat) {
-        String message = registrationService.registration(text, chat);
         if (!personService.isRegistered(chat.id())) {
+            String message = registrationService.registration(text, chat);
             return sendMessage(chat.id(), message);
         }
-        return sendMessageWithButtons(chat.id(), message);
+        if (photoService.find(text)) {
+            String path ="photos\\"+text;
+            return sendImageWithButtons(chat.id(), path);
+        }
+        return sendMessageWithButtons(chat.id(),"используйте клавиши next,all, photo");
     }
 }

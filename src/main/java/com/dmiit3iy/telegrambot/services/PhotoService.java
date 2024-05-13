@@ -6,5 +6,7 @@ import java.util.List;
 
 public interface PhotoService {
     File getFileMime (HttpServletResponse response, String filename);
-    String getAll();
+    String getAllTextMsg();
+    List<File> getAll();
+    Boolean find(String path);
 }
