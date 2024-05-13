@@ -16,10 +16,12 @@ import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.request.SendPhoto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.util.List;
 
 @BotController
@@ -55,6 +57,13 @@ public class TelegramBotController implements TelegramMvcController {
         this.registrationService = registrationService;
     }
 
+    PhotoService photoService;
+
+    @Autowired
+    public void setPhotoService(PhotoService photoService) {
+        this.photoService = photoService;
+    }
+
     TelegramService telegramService;
 
     @Autowired
@@ -69,7 +78,7 @@ public class TelegramBotController implements TelegramMvcController {
     public void init() {
 
         this.replyKeyboardMarkup = new ReplyKeyboardMarkup(
-                "/next", "/all")
+                "/next", "/all", " /image")
                 .oneTimeKeyboard(true)   // optional
                 .resizeKeyboard(true)    // optional
                 .selective(true);
@@ -104,6 +113,13 @@ public class TelegramBotController implements TelegramMvcController {
         return sendMessage.parseMode(ParseMode.HTML);
     }
 
+
+    private SendPhoto sendImageWithButtons(long chatId, String fileName) {
+        SendPhoto sendPhoto = new SendPhoto(chatId, new File(fileName));
+        sendPhoto.replyMarkup(replyKeyboardMarkup);
+        return sendPhoto.parseMode(ParseMode.HTML);
+    }
+
     /**
      * Callback for /start message
      *
@@ -124,7 +140,7 @@ public class TelegramBotController implements TelegramMvcController {
             return sendMessageWithButtonsStart(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 Хочешь немного" +
                     " <b>комплиментов</b> &#128571?" + "\n" + "тогда пройди простую регистрацию (нажми кнопку register)");
         }
-        if(personService.isRegistered(chat.id())) {
+        if (personService.isRegistered(chat.id())) {
             historyService.add("Нажал кнопку start", chat.id());
             return sendMessageWithButtons(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 используй кнопки \uD83D\uDD33 next и \uD83D\uDD33 all для получения комплиментов!");
         }
@@ -180,6 +196,13 @@ public class TelegramBotController implements TelegramMvcController {
     }
 
 
+    @BotRequest(value = "/image", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
+    public BaseRequest image(User user, Chat chat) {
+        String message = photoService.getAll();
+        return sendMessage(chat.id(), message);
+    }
+
+
     /**
      * Callback for other messages
      *
@@ -191,8 +214,8 @@ public class TelegramBotController implements TelegramMvcController {
     @BotRequest(value = "{message:[\\S ]+}", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest all(@BotPathVariable("message") String text, User user, Chat chat) {
         String message = registrationService.registration(text, chat);
-        if (!personService.isRegistered(chat.id())){
-            return sendMessage(chat.id(),message);
+        if (!personService.isRegistered(chat.id())) {
+            return sendMessage(chat.id(), message);
         }
         return sendMessageWithButtons(chat.id(), message);
     }
