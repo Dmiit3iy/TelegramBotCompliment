@@ -36,3 +36,4 @@ src/test
 mvnw.cmd
 mvnw
 src/main/resources/application.properties
+*.jpg
