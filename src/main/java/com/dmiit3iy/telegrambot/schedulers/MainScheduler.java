@@ -46,7 +46,7 @@ public class MainScheduler {
 
     @Scheduled(fixedRate = 10000)
     public void sendCompliment() {
-        String message = complimentService.getNext(chatId);
-        telegramService.sendMessage(chatId,message);
+        //String message = complimentService.getNext(chatId);
+        //telegramService.sendMessage(chatId,message);
     }
 }

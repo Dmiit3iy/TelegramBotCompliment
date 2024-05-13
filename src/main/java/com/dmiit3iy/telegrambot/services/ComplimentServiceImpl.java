@@ -22,6 +22,13 @@ public class ComplimentServiceImpl implements ComplimentService {
         this.complimentRepository = complimentRepository;
     }
 
+    HistoryService historyService;
+
+    @Autowired
+    public void setHistoryService(HistoryService historyService) {
+        this.historyService = historyService;
+    }
+
     private PersonService personService;
 
     @Autowired
@@ -69,6 +76,20 @@ public class ComplimentServiceImpl implements ComplimentService {
         return list;
     }
 
+    @Override
+    public String getAllInOneString(List<Compliment> compliments) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("Все это про тебя &#129395:");
+        stringBuilder.append("\n");
+        for (Compliment c : compliments) {
+            stringBuilder.append(c.getCompliment());
+            stringBuilder.append("\n");
+        }
+        String message = stringBuilder.toString();
+        return message;
+    }
+
     public boolean isFull(Person person) {
         List<Compliment> list = person.getCompliments();
         List<Compliment> allCompliments = getAll();
@@ -94,6 +115,7 @@ public class ComplimentServiceImpl implements ComplimentService {
 
     @Override
     public String getNext(long chatId) {
+        historyService.add("Нажал кнопку next", chatId);
         Person person = personService.getById(chatId);
         List<Compliment> list = person.getCompliments();
         Compliment compliment;
@@ -103,6 +125,10 @@ public class ComplimentServiceImpl implements ComplimentService {
         if (isFull(person)) {
             personService.clearCompliments(person.getChatId());
         }
+        person.addCompliment(compliment);
+        personService.update(person);
+
+        historyService.add("Получил комплимент "+compliment.getCompliment(), chatId);
         return compliment.getCompliment();
     }
 

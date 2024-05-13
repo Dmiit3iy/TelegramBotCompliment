@@ -52,10 +52,22 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public Person update(Person person) {
         Person oldPerson = getById(person.getChatId());
-        oldPerson.setLastName(person.getLastName());
         oldPerson.setCompliments(person.getCompliments());
         oldPerson.setUserName(person.getUserName());
-        oldPerson.setFirstName(person.getFirstName());
+        oldPerson.setAge(person.getAge());
+        oldPerson.setName(person.getName());
+        oldPerson.setLogin(person.getLogin());
+        oldPerson.setStep(person.getStep());
         return userRepository.save(oldPerson);
+    }
+
+    @Override
+    public boolean isRegistered(long chatId) {
+        Person person = getById(chatId);
+        boolean result = true;
+        if (person.getName() == null || person.getAge() == 0 || person.getLogin() == null) {
+            result = false;
+        }
+        return result;
     }
 }

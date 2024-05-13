@@ -11,4 +11,5 @@ public interface PersonService {
     Person clearCompliments(long chatID);
 
     Person update(Person person);
+    boolean isRegistered(long chatId);
 }

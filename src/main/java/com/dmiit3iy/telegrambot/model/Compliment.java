@@ -1,6 +1,7 @@
 package com.dmiit3iy.telegrambot.model;
 
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class Compliment {
     @ManyToMany
     @JoinTable(name = "persons_compliments", joinColumns = @JoinColumn(name="compliment_id"),
             inverseJoinColumns = @JoinColumn(name = "person_id"))
+    @Cascade(value = org.hibernate.annotations.CascadeType.DELETE)
     private List<Person> persons = new ArrayList<>();
 
 }

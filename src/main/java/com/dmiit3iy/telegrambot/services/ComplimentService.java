@@ -15,5 +15,5 @@ public interface ComplimentService {
     Compliment getNext(Person person);
     String getNext(long chatId);
     List<Compliment> getAll();
-
+    String getAllInOneString(List<Compliment> list);
 }

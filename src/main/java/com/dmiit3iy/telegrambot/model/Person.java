@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,21 +22,27 @@ public class Person {
     private long id;
     @Column(unique = true)
     private long chatId;
-    private String firstName;
-    private String lastName;
     private String userName;
+    private String login;
+    private String name;
+    private int age;
+    private String step;
+
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "persons_compliments", joinColumns = @JoinColumn(name = "person_id"),
-    inverseJoinColumns = @JoinColumn(name="compliment_id"))
+            inverseJoinColumns = @JoinColumn(name = "compliment_id"))
+    @Cascade(value = org.hibernate.annotations.CascadeType.DELETE)
     private List<Compliment> compliments = new ArrayList<>();
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
+    @Cascade(value = org.hibernate.annotations.CascadeType.DELETE)
     @JsonIgnore
     @ToString.Exclude
     private List<History> histories = new ArrayList<>();
 
-    public boolean addCompliment(Compliment compliment){
+    public boolean addCompliment(Compliment compliment) {
         return compliments.add(compliment);
     }
+
 }
