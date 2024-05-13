@@ -65,7 +65,8 @@ public class PersonServiceImpl implements PersonService {
     public boolean isRegistered(long chatId) {
         Person person = getById(chatId);
         boolean result = true;
-        if (person.getName() == null || person.getAge() == 0 || person.getLogin() == null) {
+        if (person.getName() == null || person.getName().equals("") || person.getAge() == 0 || person.getLogin() == null
+                || person.getLogin().equals("")) {
             result = false;
         }
         return result;

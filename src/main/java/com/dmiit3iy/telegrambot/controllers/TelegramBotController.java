@@ -87,6 +87,11 @@ public class TelegramBotController implements TelegramMvcController {
         return this.token;
     }
 
+    private SendMessage sendMessage(long chatId, String message) {
+        SendMessage sendMessage = new SendMessage(chatId, message);
+        return sendMessage.parseMode(ParseMode.HTML);
+    }
+
     private SendMessage sendMessageWithButtons(long chatId, String message) {
         SendMessage sendMessage = new SendMessage(chatId, message);
         sendMessage.replyMarkup(replyKeyboardMarkup);
@@ -108,7 +113,6 @@ public class TelegramBotController implements TelegramMvcController {
      */
     @BotRequest(value = "/start", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest start(User user, Chat chat) {
-
         long chatId = chat.id();
         String userName = user.username();
         if (personService.getById(chatId) == null) {
@@ -116,11 +120,16 @@ public class TelegramBotController implements TelegramMvcController {
             person.setChatId(chatId);
             person.setUserName(userName);
             personService.add(person);
+            historyService.add("Нажал кнопку start", chat.id());
+            return sendMessageWithButtonsStart(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 Хочешь немного" +
+                    " <b>комплиментов</b> &#128571?" + "\n" + "тогда пройди простую регистрацию (нажми кнопку register)");
+        }
+        if(personService.isRegistered(chat.id())) {
+            historyService.add("Нажал кнопку start", chat.id());
+            return sendMessageWithButtons(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 используй кнопки \uD83D\uDD33 next и \uD83D\uDD33 all для получения комплиментов!");
         }
         historyService.add("Нажал кнопку start", chat.id());
-
-        return sendMessageWithButtonsStart(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 Хочешь немного" +
-                " <b>комплиментов</b> &#128571?" + "\n" + "тогда пройди простую регистрацию (нажми кнопку register");
+        return sendMessageWithButtonsStart(chat.id(), "Привет, " + userName + "!! \uD83D\uDD25 Заверши процедуру простой регистрации (нажми кнопку register)");
     }
 
     @BotRequest(value = "/all", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
@@ -138,27 +147,26 @@ public class TelegramBotController implements TelegramMvcController {
     @BotRequest(value = "/register", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest register(User user, Chat chat, Update update) {
         historyService.add("Нажал кнопку register", chat.id());
-        String message ="";
-        Person person=personService.getById(chat.id());
+        String message = "";
+        Person person = personService.getById(chat.id());
         String step = person.getStep();
-        if (step==null){
+        if (step == null) {
             person.setStep("Login");
             personService.update(person);
-            message="Введите свой логин";
+            return sendMessage(chat.id(), "Введите свой логин");
         }
-        if (step.equals("Login")){
-            message="Введите свой логин";
+        if (step.equals("Login")) {
+            return sendMessage(chat.id(), "Введите свой логин");
         }
-        if (step.equals("Age")){
-            message="Введите свой возраст";
+        if (step.equals("Age")) {
+            return sendMessage(chat.id(), "Введите свой возраст");
         }
-        if (step.equals("Name")){
-            message="Введите своё имя";
+        if (step.equals("Name")) {
+            return sendMessage(chat.id(), "Введите своё имя");
         }
 
-        return sendMessageWithButtons(chat.id(), message);
+        return sendMessage(chat.id(), message);
     }
-
 
 
     @BotRequest(value = "/next", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
@@ -182,9 +190,10 @@ public class TelegramBotController implements TelegramMvcController {
      */
     @BotRequest(value = "{message:[\\S ]+}", type = {MessageType.CALLBACK_QUERY, MessageType.MESSAGE})
     public BaseRequest all(@BotPathVariable("message") String text, User user, Chat chat) {
-
-
-        String message=registrationService.registration(text,chat);
+        String message = registrationService.registration(text, chat);
+        if (!personService.isRegistered(chat.id())){
+            return sendMessage(chat.id(),message);
+        }
         return sendMessageWithButtons(chat.id(), message);
     }
 }
