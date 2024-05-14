@@ -27,4 +27,9 @@ public class TelegramController {
         this.telegramService.sendImage(chatId, file);
     }
 
+    @PostMapping(value = "/document/{chatId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public void sendDocument(@PathVariable long chatId, @RequestPart MultipartFile file) {
+        this.telegramService.sendDocument(chatId, file);
+    }
+
 }

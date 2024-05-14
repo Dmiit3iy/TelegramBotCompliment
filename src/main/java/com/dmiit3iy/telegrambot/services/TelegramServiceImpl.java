@@ -2,6 +2,7 @@ package com.dmiit3iy.telegrambot.services;
 
 import com.pengrad.telegrambot.Callback;
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.request.SendDocument;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
 import com.pengrad.telegrambot.response.SendResponse;
@@ -55,7 +56,6 @@ public class TelegramServiceImpl implements TelegramService {
                 public void onResponse(SendPhoto sendPhoto, SendResponse sendResponse) {
                     int messageId = sendResponse.message().messageId();
 
-                    //TODO handle messageId
                     System.out.println(messageId);
 
                     System.out.println(sendResponse);
@@ -68,6 +68,34 @@ public class TelegramServiceImpl implements TelegramService {
             });
         } catch (IOException ignored) {
             ignored.printStackTrace();
+        }
+    }
+
+    @Override
+    public void sendDocument(long chatId, MultipartFile file) {
+        String name = file.getOriginalFilename();
+        try (BufferedOutputStream bufferedOutputStream =
+                     new BufferedOutputStream(new FileOutputStream(name))) {
+            bufferedOutputStream.write(file.getBytes());
+
+            TelegramBot bot = new TelegramBot(token);
+            bot.execute(new SendDocument(chatId, new File(name)), new Callback<SendDocument, SendResponse>() {
+
+                @Override
+                public void onResponse(SendDocument sendDocument, SendResponse sendResponse) {
+                    int messageId = sendResponse.message().messageId();
+
+                    System.out.println(messageId);
+
+                    System.out.println(sendResponse);
+                }
+
+                @Override
+                public void onFailure(SendDocument sendDocument, IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (IOException ignored) {
         }
     }
 }
