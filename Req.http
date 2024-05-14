@@ -1,0 +1,14 @@
+###
+POST localhost:8080/telegram/message/842356241?message=Добрый день!
+
+###
+POST localhost:8080/telegram/image/842356241 HTTP/1.1
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="1.jpg"
+
+< C:\Users\JavaUser\IdeaProjects\Spring\TelegramBot\photos\1.jpg
+
+
+

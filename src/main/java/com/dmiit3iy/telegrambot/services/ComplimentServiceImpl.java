@@ -93,7 +93,7 @@ public class ComplimentServiceImpl implements ComplimentService {
     public boolean isFull(Person person) {
         List<Compliment> list = person.getCompliments();
         List<Compliment> allCompliments = getAll();
-        if (list == null) {
+        if (list == null || list.isEmpty()) {
             return false;
         }
         return allCompliments.size() == list.size();
@@ -118,17 +118,26 @@ public class ComplimentServiceImpl implements ComplimentService {
         historyService.add("Нажал кнопку next", chatId);
         Person person = personService.getById(chatId);
         List<Compliment> list = person.getCompliments();
-        Compliment compliment;
-        do {
-            compliment = getRandom();
-        } while (list.contains(compliment) && (!isFull(person)));
         if (isFull(person)) {
-            personService.clearCompliments(person.getChatId());
+            person = personService.clearCompliments(person.getChatId());
+            personService.update(person);
+            list = person.getCompliments();
         }
+        Compliment compliment;
+        if (list.isEmpty()) {
+            compliment = getRandom();
+        } else {
+            {
+                do {
+                    compliment = getRandom();
+                } while (list.contains(compliment));
+            }
+        }
+
         person.addCompliment(compliment);
         personService.update(person);
 
-        historyService.add("Получил комплимент "+compliment.getCompliment(), chatId);
+        historyService.add("Получил комплимент " + compliment.getCompliment(), chatId);
         return compliment.getCompliment();
     }
 

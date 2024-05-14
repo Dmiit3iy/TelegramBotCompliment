@@ -182,7 +182,7 @@ public class TelegramBotController implements TelegramMvcController {
             return sendMessage(chat.id(), "Введите своё имя");
         }
 
-        return sendMessage(chat.id(), message);
+        return sendMessageWithButtons(chat.id(), message);
     }
 
 
@@ -221,12 +221,15 @@ public class TelegramBotController implements TelegramMvcController {
     public BaseRequest all(@BotPathVariable("message") String text, User user, Chat chat) {
         if (!personService.isRegistered(chat.id())) {
             String message = registrationService.registration(text, chat);
+            if (personService.isRegistered(chat.id())) {
+                return sendMessageWithButtons(chat.id(), message);
+            }
             return sendMessage(chat.id(), message);
         }
         if (photoService.find(text)) {
-            String path ="photos\\"+text;
+            String path = "photos\\" + text;
             return sendImageWithButtons(chat.id(), path);
         }
-        return sendMessageWithButtons(chat.id(),"используйте клавиши next,all, photo");
+        return sendMessageWithButtons(chat.id(), "используйте клавиши next,all, photo");
     }
 }
